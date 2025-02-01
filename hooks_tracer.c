@@ -709,6 +709,8 @@ int main(int argc, char *argv[]) {
     pid_t pid;
     unsigned long maj_faults;
 
+    dump_pltgot(249162);
+
     // Open /proc directory.
     procdir = opendir("/proc");
     if (!procdir) {
