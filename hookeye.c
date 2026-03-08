@@ -88,7 +88,7 @@ typedef struct _TARGET {
 	// this determines how to interpret u1
 	Elf64_Xword pltreltype; // can be either DT_REL or DT_RELA
 	
-	//Dynamic symbols table and string table
+    //Dynamic symbols table and string table
 	size_t symtabsz; // size in bytes
 	Elf64_Sym *symtab;
 	size_t strtabsz; // size in bytes
@@ -709,8 +709,6 @@ int main(int argc, char *argv[]) {
     pid_t pid;
     unsigned long maj_faults;
 
-    dump_pltgot(249162);
-
     // Open /proc directory.
     procdir = opendir("/proc");
     if (!procdir) {
@@ -735,9 +733,9 @@ int main(int argc, char *argv[]) {
 
         // Get PID, process name and number of faults.
         fscanf(fp, "%d %s %*c %*d %*d %*d %*d %*d %*u %*lu %*lu %lu",
-		&pid, path, &maj_faults);
+        &pid, path, &maj_faults);
 
-    	dump_pltgot(pid);
+        //dump_pltgot(pid);
 
         fclose(fp);
     }
