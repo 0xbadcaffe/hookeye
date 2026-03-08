@@ -10,9 +10,9 @@
 - Resolves `.dynsym`, `.dynstr`, `.got.plt`, and `DT_JMPREL` relocation entries.
 - Prints each PLT slot, current jump target, symbol name, relocation type, module name, and resolution state.
 
-## Refactoring Summary
+## Design
 
-This repository was refactored from a single large C file into focused modules:
+`hookeye` is organized into focused modules:
 
 - [hookeye.c](https://github.com/0xbadcaffe/hookeye/blob/main/hookeye.c): CLI entrypoint
 - [procfs.c](https://github.com/0xbadcaffe/hookeye/blob/main/procfs.c): `/proc` map parsing and module lookup
@@ -21,7 +21,7 @@ This repository was refactored from a single large C file into focused modules:
 - [hookeye.h](https://github.com/0xbadcaffe/hookeye/blob/main/hookeye.h): public types and APIs
 - [hookeye_internal.h](https://github.com/0xbadcaffe/hookeye/blob/main/hookeye_internal.h): internal interfaces and compatibility constants
 
-The refactor also updated the ELF handling to better match current ABI practice:
+The ELF handling is designed around current ABI practice:
 
 - Uses load-bias computation from program headers instead of relying on simplistic base assumptions.
 - Uses `DT_SYMTABSZ` when present.
@@ -203,6 +203,19 @@ Common user-space hook patterns include:
 - 64-bit ELF only
 - Focused on dynamic-link state and PLT/GOT resolution, not inline patch disassembly
 - External process inspection depends on ptrace policy, capabilities, and kernel settings
+
+## Next Version Feature List
+
+The current implementation is strongest against hooks that are visible in PLT/GOT state at the moment the target is stopped and inspected. A more advanced attacker can still try to evade that view, so the next version should expand coverage in these areas:
+
+- Inline hook detection for imported functions and critical libc entrypoints, to catch code-patching attacks that do not touch `.got.plt`
+- Trampoline detection in executable anonymous mappings, to catch jumps into injected code caves or manually mapped payloads
+- Expected-module validation, to flag cases where a symbol resolves to a plausible shared object name but lands outside the expected code range
+- Pre-attach and post-attach comparison modes, to help identify targets that temporarily restore clean GOT state before inspection
+- Mapping anomaly detection for short-lived executable pages, suspicious `memfd` mappings, and unusual `rwx` regions
+- Thread-aware inspection, to help catch per-thread or race-window hook behavior that may not show up in a single narrow snapshot
+- Optional prologue fingerprinting against on-disk ELF data, to catch tampering inside otherwise legitimate modules such as `libc.so.6`
+- Loader and environment checks for interposition signals such as suspicious preload usage, unexpected linker state, or modified runtime search paths
 
 ## Specification Sources Used
 
